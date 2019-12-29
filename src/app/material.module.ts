@@ -23,7 +23,7 @@ import {
 
 @NgModule({
   imports: [
-    MatButtonModule, 
+    MatButtonModule,
     MatIconModule,
     MatFormFieldModule,
     MatInputModule,

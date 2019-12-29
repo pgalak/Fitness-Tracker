@@ -1,16 +1,17 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
-import { Subscription } from 'rxjs';
+import { Observable } from 'rxjs';
+import { Store } from '@ngrx/store';
 
 import { AuthService } from '../auth.service';
-import { UIService } from 'src/app/shared/ui.service';
+import * as fromRoot from '../../app.reducer';
 
 @Component({
   selector: 'app-signup',
   templateUrl: './signup.component.html',
   styleUrls: ['./signup.component.css']
 })
-export class SignupComponent implements OnInit, OnDestroy {
+export class SignupComponent implements OnInit {
   maxDate;
   signupForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -18,32 +19,23 @@ export class SignupComponent implements OnInit, OnDestroy {
     birthDate: ['', Validators.required],
     conditions: ['', Validators.required]
   });
-  isLoading = false;
-  loadingSubscription: Subscription
+  isLoading$: Observable<boolean>;
 
   constructor(private fb: FormBuilder,
               private authService: AuthService,
-              private uiService: UIService) { }
+              private store: Store<fromRoot.State>) { }
 
   ngOnInit() {
-    this.loadingSubscription = this.uiService.loadingStateChanged.subscribe(isLoading => {
-      this.isLoading = isLoading;
-    });
+    this.isLoading$ = this.store.select(fromRoot.getIsLoading);
     this.maxDate = new Date();
     this.maxDate.setFullYear(this.maxDate.getFullYear() - 18);
   }
 
   onSubmit() {
     this.authService.registerUser({
-      email: this.signupForm.value.email, 
+      email: this.signupForm.value.email,
       password: this.signupForm.value.password
-    })
+    });
     this.signupForm.reset();
-  }
-
-  ngOnDestroy() {
-    if (this.loadingSubscription) {
-      this.loadingSubscription.unsubscribe();
-    }
   }
 }
